@@ -1,0 +1,13 @@
+.env
+venv/
+temp/
+__pycache__/
+*.pyc
+*.pyo
+*.log
+.vscode/
+*.pdf
+*.docx
+*.jpg
+*.jpeg
+*.png
