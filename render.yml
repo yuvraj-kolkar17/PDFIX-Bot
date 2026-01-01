@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: pdf-utility-bot
+    env: python
+    region: oregon
+    plan: free
+    buildCommand: |
+      apt-get update
+      apt-get install -y ghostscript poppler-utils libreoffice
+      pip install --upgrade pip
+      pip install -r requirements.txt
+    startCommand: python main.py
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: ADMIN_USER_ID
+        sync: false
+      - key: MAX_FILE_SIZE
+        value: 50

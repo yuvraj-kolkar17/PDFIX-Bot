@@ -1,6 +1,8 @@
 import logging
 from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQueryHandler, filters, ConversationHandler
 import config
+from aiohttp import web
+import asyncio
 
 from handlers.commands import start_command, help_command
 from handlers.file_handler import handle_document, handle_callback
@@ -10,7 +12,6 @@ from services.split import handle_split_pages
 from services.compress import handle_compression_level
 from services.merge import confirm_merge
 
-#  logging
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO
@@ -42,15 +43,30 @@ async def handle_all_callbacks(update, context):
     """Handle all callback queries"""
     query = update.callback_query
     
-    #handle compressin callback
+     # Handle compression level callbacks
     if query.data.startswith('compress_'):
         await handle_compression_level(update, context)
-    # Handle merge cnf
+    # Handle merge confirmation
     elif query.data == 'confirm_merge':
         await confirm_merge(update, context)
-    #Handle general callbacks
+    # Handle general callbacks
     else:
         await handle_callback(update, context)
+
+# Health check endpoint for Render
+async def health_check(request):
+    """Health check endpoint to keep service alive"""
+    return web.Response(text="Bot is running!")
+
+async def start_web_server():
+    """Start web server for health checks"""
+    app = web.Application()
+    app.router.add_get('/', health_check)
+    runner = web.AppRunner(app)
+    await runner.setup()
+    site = web.TCPSite(runner, '0.0.0.0', 8080)
+    await site.start()
+    logger.info("Web server started on port 8080")
 
 def main():
     """Start the bot"""
@@ -65,7 +81,7 @@ def main():
         .build()
     )
     
-    #cmd
+    
     application.add_handler(CommandHandler("start", start_command))
     application.add_handler(CommandHandler("help", help_command))
     
@@ -75,17 +91,22 @@ def main():
         handle_document
     ))
     
-    # Text message handler
+      #Text message handler
     application.add_handler(MessageHandler(
         filters.TEXT & ~filters.COMMAND,
         handle_text_messages
     ))
     
-    
+   
     application.add_handler(CallbackQueryHandler(handle_all_callbacks))
     
-  
+    
     logger.info("Bot is starting...")
+    
+    # Run both web server and bot
+    loop = asyncio.get_event_loop()
+    loop.create_task(start_web_server())
+    
     application.run_polling(allowed_updates=["message", "callback_query"])
 
 if __name__ == '__main__':
