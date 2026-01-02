@@ -5,7 +5,7 @@ import config
 
 async def handle_document(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle uploaded documents and photos"""
-    # Handle both documents and photos
+    #handle document and photos
     if update.message.document:
         document = update.message.document
         file_name = document.file_name
@@ -13,7 +13,7 @@ async def handle_document(update: Update, context: ContextTypes.DEFAULT_TYPE):
         file_size = document.file_size
         file_extension = file_name.split('.')[-1].lower()
     elif update.message.photo:
-        # Get the largest photo size
+        # get the large photo size
         photo = update.message.photo[-1]
         file_id = photo.file_id
         file_size = photo.file_size if photo.file_size else 0
@@ -168,3 +168,7 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif operation == "extract_text":
         from services.convert import extract_text_from_pdf
         await extract_text_from_pdf(update, context)
+    
+    elif operation == "rename": 
+        from services.rename import start_rename
+        await start_rename(update, context)

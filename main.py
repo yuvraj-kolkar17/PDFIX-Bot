@@ -36,6 +36,9 @@ async def handle_text_messages(update, context):
         await handle_decryption_password(update, context)
     elif waiting_for == 'split_pages':
         await handle_split_pages(update, context)
+    elif waiting_for == 'rename_input':  
+        from services.rename import handle_rename_input
+        await handle_rename_input(update, context)
     else:
         await update.message.reply_text("Please upload a file first.")
 
